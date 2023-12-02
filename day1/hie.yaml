@@ -1,0 +1,13 @@
+cradle:
+  cabal:
+    - path: "src"
+      component: "lib:day1"
+
+    - path: "part1/main.hs"
+      component: "day1:exe:Day1Part1"
+
+    - path: "part2/main.hs"
+      component: "day1:exe:Day1Part2"
+
+    - path: "test/main.hs"
+      component: "day1:exe:Test"
