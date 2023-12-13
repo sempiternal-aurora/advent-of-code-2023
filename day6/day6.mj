@@ -1,0 +1,99 @@
+type FILE = object {};
+
+const FILENAME: Text = "test";
+
+def fopen(filename, mode: Text): ^FILE;
+def fclose(stream: ^FILE): int;
+def fgetc(stream: ^FILE): int;
+def putchar(char: int): int;
+def printf(str: Text, num: int): int;
+def isspace(char: int): int;
+def isblank(char: int): int;
+def isdigit(char: int): int;
+
+type
+    Race  = (time, best_distance: int);
+    Races = [] Race;
+    IntArray = [] int;
+
+def EqualsRaces(obj1, obj2: ^Races): bool {
+    if (Number(obj1^) != Number(obj2^)) {
+        return false;
+    }
+    for i := 0 .. Number(obj1^) - 1 {
+        if !EqualsRace(obj1^[i], obj2^[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+def EqualsRace(obj1, obj2: Race): bool {
+    return obj1.time == obj2.time && obj1.best_distance == obj2.best_distance;
+}
+
+def CreateTestRaces(): ^Races {
+    var test_races := New(^Races, 3);
+    test_races^[0] := New(^Race)^;
+    test_races^[0].time := 7;
+    test_races^[0].best_distance := 9;
+    test_races^[1] := New(^Race)^;
+    test_races^[1].time := 15;
+    test_races^[1].best_distance := 40;
+    test_races^[2] := New(^Race)^;
+    test_races^[2].time := 30;
+    test_races^[2].best_distance := 200;
+    return test_races;
+}
+
+{
+    var input_file_stream := fopen(FILENAME, "r");
+    if (input_file_stream != nil) {
+        var c := fgetc(input_file_stream);
+        var is_times_done: bool := false;
+        var num_buffer: int := 0;
+        var races: ^Races := New(^Races, 0);
+        var last_best_distance: int := 0;
+        loop while c != -1 {
+            if (isdigit(c) != 0) {
+                num_buffer := 10 * num_buffer + c - '0';
+            }
+            if (isblank(c) != 0 && num_buffer != 0 && !is_times_done) {
+                /* grows the array of races */
+                /* should only occur when we have not finished importing times and at a space/newline */
+                /* and the num_buffer is not empty, empties it */
+                var new_races := New(^Races, Number(races^) + 1); 
+                for i := 0 .. (Number(races^) - 1) {
+                    new_races^[i] := races^[i];
+                }
+                new_races^[Number(new_races^) - 1] := New(^Race)^;
+                new_races^[Number(new_races^) - 1].time := num_buffer;
+                num_buffer := 0;
+                races := new_races;
+                printf("length of races %d", Number(races^));
+                printf("length of new races %d", Number(new_races^));
+            }
+            if (isblank(c) != 0 && num_buffer != 0 && is_times_done) {
+                printf("last best distance %d", last_best_distance);
+                races^[last_best_distance].best_distance := num_buffer;
+                last_best_distance := last_best_distance + 1;
+                printf("updated last best distance %d", last_best_distance);
+                num_buffer := 0;
+            }
+            if (isspace(c) != 0 && isblank(c) == 0 && !is_times_done) {
+                is_times_done := true;
+            }
+            putchar(c); /* debug print */
+            c := fgetc(input_file_stream);
+        }
+        fclose(input_file_stream);
+        if (EqualsRaces(races, CreateTestRaces())) {
+            printf("%d Parsed test race is correct", 0);
+        } else {
+            printf("%d Parsed test race is incorrect", -1);
+        }
+    }
+    else {
+        printf("%d Error: File not found!", -1);
+    }
+}
