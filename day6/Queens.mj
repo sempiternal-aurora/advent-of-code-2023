@@ -1,0 +1,59 @@
+def putchar(i: int): int;
+
+const N: int = 8;
+
+type
+  Queens = object {
+    row, col: ^[N]int;
+    diag1, diag2: ^[N+N-1]int;
+    init(): Queens := Init;
+    solve(c: int) := Solve;
+  };
+
+def Init(self: Queens): Queens {
+  self.row := New(^[N]int);
+  self.col := New(^[N]int);
+  self.diag1 := New(^[N+N-1]int);
+  self.diag2 := New(^[N+N-1]int);
+  return self;
+}
+
+def Solve(self: Queens; c: int) {
+  if c == Number(self.col^) {
+    Print(self);
+  } else {
+    for r := 0 .. Number(self.row^)-1 {
+      if self.row^[r] == 0
+         && self.diag1^[r+c] == 0
+         && self.diag2^[r+(N-1)-c] == 0 {
+        self.row^[r] := 1;
+        self.diag1^[r+c] := 1;
+        self.diag2^[r+(N-1)-c] := 1;
+        self.col^[c] := r;
+        self.solve(c+1);
+        self.row^[r] := 0;
+        self.diag1^[r+c] := 0;
+        self.diag2^[r+(N-1)-c] := 0;
+      }
+    }
+  }
+}
+
+def Print(self: Queens) {
+  for i := 0 .. Number(self.col^)-1 {
+    for j := 0 .. Number(self.row^)-1 {
+      putchar(' ');
+      if self.col^[i] == j {
+        putchar('Q');
+      } else {
+        putchar('.');
+      }
+    }
+    putchar('\n');
+  }
+  putchar('\n');
+}
+
+{
+  New(Queens).init().solve(0);
+}
